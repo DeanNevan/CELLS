@@ -1,0 +1,33 @@
+[gd_scene load_steps=6 format=2]
+
+[ext_resource path="res://Assets/Art/Particles/Float/float.png" type="Texture" id=1]
+[ext_resource path="res://Assets/Particles/Float/Float.gd" type="Script" id=2]
+
+[sub_resource type="Gradient" id=1]
+offsets = PoolRealArray( 0, 0.281481, 0.481481, 0.696296, 0.881481 )
+colors = PoolColorArray( 1, 1, 1, 1, 1, 1, 1, 0.964706, 1, 1, 1, 0.784314, 1, 1, 1, 0.552941, 1, 1, 1, 0.0705882 )
+
+[sub_resource type="GradientTexture" id=2]
+gradient = SubResource( 1 )
+
+[sub_resource type="ParticlesMaterial" id=3]
+emission_shape = 2
+emission_box_extents = Vector3( 0, 15, 0 )
+flag_disable_z = true
+spread = 25.0
+gravity = Vector3( 0, 0, 0 )
+initial_velocity = 80.0
+angular_velocity = 1.0
+orbit_velocity = 0.0
+orbit_velocity_random = 0.0
+damping = 0.1
+color_ramp = SubResource( 2 )
+
+[node name="Float" type="Particles2D"]
+z_index = -1
+amount = 25
+lifetime = 3.0
+local_coords = false
+process_material = SubResource( 3 )
+texture = ExtResource( 1 )
+script = ExtResource( 2 )
