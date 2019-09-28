@@ -13,7 +13,7 @@ func _ready():
 func _process(delta):
 	#print("left time", armor_bonus_timer.time_left)
 	if Input.is_action_just_pressed("right_mouse_button"):
-		self.get_damage(12)
+		self.get_damage(15)
 		#self.global_rotation += 0.1
 		#print(self.global_rotation)
 	#print("energy is", self.energy)
@@ -26,6 +26,8 @@ func _process(delta):
 		_restart_armor_bonus_timer()
 	if armor == orgin_armor:
 		armor_bonus_timer.paused = true
+	
+	
 
 func _on_armor_bonus_timer_timeout():
 	if armor > orgin_armor:
@@ -38,6 +40,8 @@ func _restart_armor_bonus_timer():
 func _on_get_hit(final_damage):
 	if final_damage > 0:
 		self.armor += 1
+
+
 
 func init():
 	armor = 8
@@ -54,4 +58,8 @@ func init():
 	armor_bonus_timer.paused = true
 	armor_bonus_timer.connect("timeout", self, "_on_armor_bonus_timer_timeout")
 	self.connect("get_hit", self, "_on_get_hit")
+	
+	#NNArea.get_node("CollisionShape2D").shape.radius = NN_distance
+	#NNArea.get_node("CollisionShape2D").shape.radius = NN_distance
 	init_ok = true
+	emit_signal("init_ok")

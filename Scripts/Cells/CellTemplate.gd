@@ -2,6 +2,8 @@ extends RigidBody2D
 
 signal get_hit
 
+signal init_ok
+
 signal get_damage
 
 var name_CN = "细胞"
@@ -13,6 +15,10 @@ var vector_to_nerve_cell = 0
 var is_in_NN = false#是否在神经网络中
 var connected_cells := []#与此细胞相连的细胞数组
 var should_goto_center = true#是否需要向中心移动
+
+var is_connect_NerveCell = false
+
+var target_goto_cell
 
 var keys = []#连接的键
 
@@ -39,9 +45,9 @@ var push_acceleration = 1#推动加速度 0.0-1.0
 
 var max_bear_speed = 80
 
-var max_centripetal_velocity = 25
+var max_centripetal_velocity = 35
 var centripetal_velocity = 0
-var centripetal_accelaration = 0.8
+var centripetal_accelaration = 2
 
 var alert_distance = 200#警戒距离
 
@@ -56,8 +62,18 @@ onready var invincible_timer = Timer.new()#无敌时间计时器
 onready var energy_bar = $EnergyBar#能量条
 
 onready var float_particle = $Float#游动时的尾部粒子
+
+onready var NerveCell = get_parent().get_node("NerveCell")
+
+onready var NNArea = $NNArea
 # Called when the node enters the scene tree for the first time.
 func _ready():
+	self.connect("init_ok", self, "on_init_ok")
+	
+	get_parent().connect("cells_array_change", self, "_on_cells_array_change")
+	NNArea.connect("body_entered", self, "_on_body_enter_NNArea")
+	NNArea.connect("body_exited", self, "_on_body_exit_NNArea")
+	
 	add_child(invincible_timer)
 	invincible_timer.wait_time = invincible_time
 	invincible_timer.autostart = false
@@ -70,10 +86,25 @@ func _process(delta):
 	if !init_ok:
 		print("haven`t init ok")
 		return
-	
 	pos1 = self.global_position#两帧之间的位置差值
 	linear_speed = pos1 - pos2
 	pos2 = pos1
+	
+	if self.is_in_NN:
+		for i in connected_cells.size():
+			connected_cells[i].is_in_NN = true
+	
+	var _target_goto_cell = NerveCell
+	var _cloest_goto_cell_distance = (NerveCell.global_position - self.global_position).length()
+	for i in connected_cells.size():
+		if (NerveCell.global_position - connected_cells[i].global_position).length() < _cloest_goto_cell_distance:
+			_target_goto_cell = connected_cells[i]
+			_cloest_goto_cell_distance = (NerveCell.global_position - connected_cells[i].global_position).length()
+	target_goto_cell = _target_goto_cell
+	if (_target_goto_cell.global_position - self.global_position).length() > _target_goto_cell.cell_radius + self.cell_radius + 20:
+		self.should_goto_center = true
+	else:
+		self.should_goto_center = false
 	
 	if !Input.is_mouse_button_pressed(BUTTON_LEFT):
 		is_picked = false
@@ -93,6 +124,15 @@ func _process(delta):
 func _on_invincible_timer_timeout():
 	basic_state["invincible"] = false
 
+func _on_body_enter_NNArea(body):
+	if body == self:
+		return
+	print("enter!!!")
+	connected_cells.append(body)
+
+func _on_body_exit_NNArea(body):
+	connected_cells.erase(body)
+
 func _update_energy_bar():
 	energy_bar.value = energy
 
@@ -111,3 +151,6 @@ func get_damage(damage, is_hit = true):
 		energy -= damage
 	
 	_update_energy_bar()
+
+func on_init_ok():
+	pass
