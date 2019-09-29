@@ -17,6 +17,11 @@ var _cells_count = 0
 var NerveCell
 var NerveCellInstance
 
+var is_turning = false
+var turn_speed = 0
+var max_turn_speed = 3
+var turn_way = 1#1,clockwise;-1, anticlockwise
+
 var ArmorCell : PackedScene
 func _ready():
 	NerveCell = preload("res://Assets/Cells/NerveCell.tscn")
@@ -37,6 +42,9 @@ func _draw():
 func _process(delta):
 	if cells_array.size() == 0:
 		return
+	
+	
+	
 	update()
 	var _bear_speed = []
 	
@@ -61,7 +69,7 @@ func _process(delta):
 		#var _centripetal_ang = 0
 		#如果该细胞的向心速度达到峰值，则不再进行向心方向上的加速
 		cells_array[i].centripetal_velocity = clamp(cells_array[i].centripetal_velocity, -cells_array[i].max_centripetal_velocity, cells_array[i].max_centripetal_velocity)
-		cells_array[i].vector_to_nerve_cell = NerveCellInstance.global_position - cells_array[i].global_position
+		cells_array[i].vector_to_NerveCell = NerveCellInstance.global_position - cells_array[i].global_position
 		
 		if cells_array[i].centripetal_velocity > cells_array[i].max_centripetal_velocity:
 			cells_array[i].centripetal_velocity = cells_array[i].max_centripetal_velocity
@@ -81,7 +89,16 @@ func _process(delta):
 			cells_array[i].centripetal_velocity -= cells_array[i].centripetal_accelaration
 		var _vel = cells_array[i].centripetal_velocity * ($NerveCell.global_position - cells_array[i].global_position).normalized() + CELLS_linear_velocity
 		
-		#var _CELLS_velocity_length = clamp(CELLS_linear_velocity.length(), 0, CELLS_max_bear_speed)
-		cells_array[i].linear_velocity = cells_array[i].centripetal_velocity * ($NerveCell.global_position - cells_array[i].global_position).normalized() + NerveCellInstance.linear_velocity
+		if cells_array[i].on_command:
+			cells_array[i].linear_velocity = NerveCellInstance.linear_velocity
+		else:
+			cells_array[i].linear_velocity = cells_array[i].centripetal_velocity * ($NerveCell.global_position - cells_array[i].global_position).normalized() + NerveCellInstance.linear_velocity
 		#cells_array[i].linear_velocity = _vel.normalized() * clamp(_vel.length(), 0, CELLS_max_bear_speed)
-
+		if is_turning:
+			var _cen_ang = cells_array[i].vector_to_NerveCell.angle()
+			var _vel_ang = _cen_ang + turn_way * PI / 2
+			turn_speed = clamp(turn_speed, 0, max_turn_speed)
+			cells_array[i].linear_velocity += cells_array[i].vector_to_NerveCell.length() * 0.35 * Vector2(cos(_vel_ang), sin(_vel_ang)) * turn_speed
+			
+		if cells_array[i].on_command and cells_array[i].command_position != null:
+			cells_array[i].linear_velocity += (cells_array[i].push_strength / 2.0) * (cells_array[i].command_position - cells_array[i].global_position).normalized()

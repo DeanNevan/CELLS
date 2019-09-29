@@ -11,7 +11,7 @@ var name_CN = "细胞"
 var tag = "cell"#player_cell, enemy_cell, cell
 var type#support_cell, melee_cell, ranged_cell, nerve_cell
 
-var vector_to_nerve_cell = 0
+var vector_to_NerveCell = 0
 var is_in_NN = false#是否在神经网络中
 var connected_cells := []#与此细胞相连的细胞数组
 var should_goto_center = true#是否需要向中心移动
@@ -31,7 +31,9 @@ var pos2 = Vector2()
 var init_ok = false#是否初始化完成
 
 var is_mouse_entered := false#鼠标是否进入
-var is_picked := false#是否被拾起
+var is_selected := false#是否被拾起
+var on_command = false
+var command_position
 
 var armor = 5#护甲
 var strength = 10#伤害/强度
@@ -66,9 +68,19 @@ onready var float_particle = $Float#游动时的尾部粒子
 onready var NerveCell = get_parent().get_node("NerveCell")
 
 onready var NNArea = $NNArea
+
+onready var BodyArea = Area2D.new()
+onready var BodyAreaShape = CollisionShape2D.new()
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	self.connect("init_ok", self, "on_init_ok")
+	
+	#add_child(BodyArea)
+	#BodyAreaShape.shape = CircleShape2D.new()
+	#BodyAreaShape.shape.radius = cell_radius
+	#BodyArea.add_child(BodyAreaShape)
+	#BodyArea.connect("area_entered", self, "_on_area_entered")
+	#BodyArea.connect("area_exited", self, "_on_area_exited")
 	
 	get_parent().connect("cells_array_change", self, "_on_cells_array_change")
 	NNArea.connect("body_entered", self, "_on_body_enter_NNArea")
@@ -86,6 +98,8 @@ func _process(delta):
 	if !init_ok:
 		print("haven`t init ok")
 		return
+	
+	#is_selected = false
 	pos1 = self.global_position#两帧之间的位置差值
 	linear_speed = pos1 - pos2
 	pos2 = pos1
@@ -95,9 +109,9 @@ func _process(delta):
 			connected_cells[i].is_in_NN = true
 	
 	var _target_goto_cell = NerveCell
-	var _cloest_goto_cell_distance = (NerveCell.global_position - self.global_position).length()
+	var _cloest_goto_cell_distance = 0
 	for i in connected_cells.size():
-		if (NerveCell.global_position - connected_cells[i].global_position).length() < _cloest_goto_cell_distance:
+		if (NerveCell.global_position - connected_cells[i].global_position).length() < (NerveCell.global_position - self.global_position).length() and (NerveCell.global_position - connected_cells[i].global_position).length() > _cloest_goto_cell_distance:
 			_target_goto_cell = connected_cells[i]
 			_cloest_goto_cell_distance = (NerveCell.global_position - connected_cells[i].global_position).length()
 	target_goto_cell = _target_goto_cell
@@ -106,18 +120,13 @@ func _process(delta):
 	else:
 		self.should_goto_center = false
 	
-	if !Input.is_mouse_button_pressed(BUTTON_LEFT):
-		is_picked = false
+	if !self.is_in_NN:
+		self.should_goto_center = true
+	
 	if (get_global_mouse_position() - self.global_position).length() < cell_radius:
 		is_mouse_entered = true
-		if Input.is_mouse_button_pressed(BUTTON_LEFT):
-			is_picked = true
 	else:
 		is_mouse_entered = false
-	
-	if is_picked:
-		#$CollisionShape2D.disabled = true
-		self.global_position = get_global_mouse_position()
 	
 	#_update_energy_bar()
 

@@ -12,7 +12,9 @@ func _ready():
 	self.visible = false
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
-	if (get_parent().is_mouse_entered or get_parent().is_picked) and Input.is_key_pressed(KEY_SPACE):
+	if (get_parent().is_mouse_entered or get_parent().is_selected) and Input.is_key_pressed(KEY_SPACE):
+		display()
+	elif Input.is_key_pressed(KEY_ALT):
 		display()
 	else:
 		self.visible = false
@@ -22,6 +24,6 @@ func display():
 	if get_parent().is_in_NN:
 		$Label.modulate = Color.green
 	else:
-		$Label.modulate = Color.red
+		$Label.modulate = Color.yellow
 	update()
-	$Label.text = str(get_parent().name_CN) + "\n" + "------" + "\n" + "能量" + str(get_parent().energy) + "/" + str(get_parent().max_energy) + "\n" + "护甲" + str(get_parent().armor) + "\n" + str(get_parent().is_connect_NerveCell)
+	$Label.text = str(get_parent().name_CN) + "\n" + "------" + "\n" + "能量" + str(get_parent().energy) + "/" + str(get_parent().max_energy) + "\n" + "护甲" + str(get_parent().armor) + "\n" + str(get_parent().is_selected)
