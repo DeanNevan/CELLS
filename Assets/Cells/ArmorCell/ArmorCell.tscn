@@ -23,9 +23,6 @@ radius = 35.0
 
 [node name="ArmorCell" type="RigidBody2D"]
 continuous_cd = 2
-contacts_reported = 2
-contact_monitor = true
-can_sleep = false
 script = ExtResource( 1 )
 
 [node name="AnimatedSprite" type="AnimatedSprite" parent="."]

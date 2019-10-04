@@ -13,7 +13,8 @@ func _ready():
 func _process(delta):
 	#print("left time", armor_bonus_timer.time_left)
 	if Input.is_action_just_pressed("right_mouse_button"):
-		self.get_damage(15)
+		#self.get_damage(15)
+		pass
 		#self.global_rotation += 0.1
 		#print(self.global_rotation)
 	#print("energy is", self.energy)

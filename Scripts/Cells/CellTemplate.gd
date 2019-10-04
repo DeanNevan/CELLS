@@ -33,7 +33,9 @@ var init_ok = false#是否初始化完成
 var is_mouse_entered := false#鼠标是否进入
 var is_selected := false#是否被拾起
 var on_command = false
-var command_position
+var command_target_position = Vector2()
+var command_start_global_position = Vector2()
+var command_left_vector = Vector2()
 
 var armor = 5#护甲
 var strength = 10#伤害/强度
@@ -104,6 +106,8 @@ func _process(delta):
 	linear_speed = pos1 - pos2
 	pos2 = pos1
 	
+	_detect_MouseRegion()
+	
 	if self.is_in_NN:
 		for i in connected_cells.size():
 			connected_cells[i].is_in_NN = true
@@ -114,6 +118,8 @@ func _process(delta):
 		if (NerveCell.global_position - connected_cells[i].global_position).length() < (NerveCell.global_position - self.global_position).length() and (NerveCell.global_position - connected_cells[i].global_position).length() > _cloest_goto_cell_distance:
 			_target_goto_cell = connected_cells[i]
 			_cloest_goto_cell_distance = (NerveCell.global_position - connected_cells[i].global_position).length()
+	if (NerveCell.global_position - global_position).angle_to(NerveCell.global_position - _target_goto_cell.global_position) > PI / 3 and connected_cells.has(NerveCell):
+		_target_goto_cell = NerveCell
 	target_goto_cell = _target_goto_cell
 	if (_target_goto_cell.global_position - self.global_position).length() > _target_goto_cell.cell_radius + self.cell_radius + 20:
 		self.should_goto_center = true
@@ -122,6 +128,13 @@ func _process(delta):
 	
 	if !self.is_in_NN:
 		self.should_goto_center = true
+	
+	if on_command:
+		command_left_vector = command_target_position - (global_position - command_start_global_position)
+		if abs((global_position - command_start_global_position).length() - command_target_position.length()) <= cell_radius:
+			on_command = false
+			command_target_position = Vector2()
+			command_left_vector = Vector2()
 	
 	if (get_global_mouse_position() - self.global_position).length() < cell_radius:
 		is_mouse_entered = true
@@ -136,7 +149,7 @@ func _on_invincible_timer_timeout():
 func _on_body_enter_NNArea(body):
 	if body == self:
 		return
-	print("enter!!!")
+	#print("enter!!!")
 	connected_cells.append(body)
 
 func _on_body_exit_NNArea(body):
@@ -160,6 +173,15 @@ func get_damage(damage, is_hit = true):
 		energy -= damage
 	
 	_update_energy_bar()
+
+func _detect_MouseRegion():
+	if $CollisionShape2D.shape.collide(Transform2D(0, self.global_position), Mouse_Global.MouseRegionShape.shape, Transform2D(0, Mouse_Global.MouseRegionArea.global_position)):
+		self.is_selected = true
+		#print("!!")
+	#elif Mouse_Global.is_mouse_selecting and self.is_selected and Input.is_key_pressed(KEY_SHIFT):
+		#self.is_selected = true
+	elif Input.is_action_just_pressed("left_mouse_button") and !Input.is_key_pressed(KEY_SHIFT):
+		self.is_selected = false
 
 func on_init_ok():
 	pass
