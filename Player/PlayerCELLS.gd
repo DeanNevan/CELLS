@@ -21,12 +21,22 @@ func _process(delta):
 		ArmorCell1.tag = "player_cell"
 		cells_array.append(ArmorCell1)
 		
-	if Input.is_action_just_pressed("right_mouse_button"):
+	if Input.is_action_pressed("right_mouse_button"):
+		var _count = 1
+		on_command_cells_center_point = Vector2()
 		for i in cells_array.size():
-			if cells_array[i].is_selected:
+			if cells_array[i].is_selected and cells_array[i].tag == "player_cell" and cells_array[i].type != "nerve_cell":
 				cells_array[i].on_command = true
-				cells_array[i].command_target_position = get_global_mouse_position() - cells_array[i].global_position
-				cells_array[i].command_start_global_position = cells_array[i].global_position
+				
+				_count += 1
+				on_command_cells_center_point += cells_array[i].global_position
+		on_command_cells_center_point = on_command_cells_center_point / (_count - 1)
+		for i in cells_array.size():
+			if cells_array[i].is_selected and cells_array[i].tag == "player_cell" and cells_array[i].type != "nerve_cell":
+				#cells_array[i].command_position = cells_array[i].global_position + (get_global_mouse_position() - on_command_cells_center_point) - NerveCellInstance.global_position
+				#cells_array[i].vector_to_command_position = (NerveCellInstance.global_position + cells_array[i].command_position) - cells_array[i].global_position
+				cells_array[i].LabelCell.global_position = cells_array[i].global_position + (get_global_mouse_position() - on_command_cells_center_point)
+			print(cells_array[i].LabelCell.global_position)
 	
 	_control_move()
 

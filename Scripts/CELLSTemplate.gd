@@ -9,6 +9,8 @@ var CELLS_linear_velocity := Vector2()#CELLS的线速度
 var CELLS_center_point := Vector2()#global_position
 var CELLS_max_bear_speed = 0#细胞群最大承受速度
 
+var on_command_cells_center_point = Vector2()
+
 var _plus_all_cells_position := Vector2()
 
 var _should_update_NNArea = true
@@ -27,7 +29,6 @@ func _ready():
 	NerveCell = preload("res://Assets/Cells/NerveCell.tscn")
 	
 	ArmorCell = preload("res://Assets/Cells/ArmorCell/ArmorCell.tscn")
-	
 	
 	pass # Replace with function body.
 
@@ -96,7 +97,20 @@ func _process(delta):
 		var _vel_ang = _cen_ang + PI / 2
 		turn_speed = clamp(turn_speed, -max_turn_speed, max_turn_speed)
 		cells_array[i].linear_velocity += cells_array[i].vector_to_NerveCell.length() * 0.35 * Vector2(cos(_vel_ang), sin(_vel_ang)) * turn_speed
-			
-		if cells_array[i].on_command and cells_array[i].command_target_position != Vector2():
+		
+		_cen_ang = (NerveCellInstance.global_position - cells_array[i].LabelCell.global_position).angle()
+		_vel_ang = _cen_ang + PI / 2
+		cells_array[i].LabelCell.linear_velocity = NerveCellInstance.linear_velocity + (NerveCellInstance.global_position - cells_array[i].LabelCell.global_position).length() * 0.35 * Vector2(cos(_vel_ang), sin(_vel_ang)) * turn_speed
+		
+		if cells_array[i].on_command and cells_array[i].command_position != Vector2():
+			cells_array[i].command_speed += cells_array[i].push_strength / 10.0
+			cells_array[i].command_speed = clamp(cells_array[i].command_speed, 0, cells_array[i].max_command_speed)
+			cells_array[i].linear_velocity += cells_array[i].command_speed * cells_array[i].vector_to_command_position.normalized()
+		if !cells_array[i].on_command:
+			cells_array[i].command_speed -= cells_array[i].push_strength / 3.0
+			cells_array[i].command_speed = clamp(cells_array[i].command_speed, 0, cells_array[i].max_command_speed)
+		
+		
+		#if cells_array[i].on_command and cells_array[i].command_target_position != Vector2():
 			#print(cells_array[i].command_position)
-			cells_array[i].linear_velocity += cells_array[i].push_strength * cells_array[i].command_target_position.normalized()
+			#cells_array[i].linear_velocity += cells_array[i].push_strength * cells_array[i].command_target_position.normalized()

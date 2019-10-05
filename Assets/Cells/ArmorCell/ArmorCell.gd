@@ -17,6 +17,8 @@ func _process(delta):
 		pass
 		#self.global_rotation += 0.1
 		#print(self.global_rotation)
+	#should_goto_center = false
+	#print(should_goto_center)
 	#print("energy is", self.energy)
 	#print("max_energy is", max_energy)
 	#print("armor is", armor)

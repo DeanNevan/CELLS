@@ -33,9 +33,10 @@ var init_ok = false#是否初始化完成
 var is_mouse_entered := false#鼠标是否进入
 var is_selected := false#是否被拾起
 var on_command = false
-var command_target_position = Vector2()
-var command_start_global_position = Vector2()
-var command_left_vector = Vector2()
+var command_position = Vector2()
+var vector_to_command_position = Vector2()
+var max_command_speed = 50
+var command_speed = 0
 
 var armor = 5#护甲
 var strength = 10#伤害/强度
@@ -55,7 +56,18 @@ var centripetal_accelaration = 2
 
 var alert_distance = 200#警戒距离
 
-var basic_state = {"can_work" : true, "can_push" : true, "can_turn" : true, "invincible" : false}#基础状态
+enum {
+	STATE_GOTO_NERVECELL
+	STATE_INVINCIBLE
+	STATE_WORKING
+	STATE_MOVING
+	STATE_TURNING
+	STATE_IN_NN
+	STATE_MISS
+}
+
+var state = {STATE_GOTO_NERVECELL : false, STATE_INVINCIBLE : false, STATE_WORKING : false, STATE_MOVING : false, STATE_TURNING : false, STATE_IN_NN : false, STATE_MISS = false}
+#var basic_state = {"can_work" : true, "can_push" : true, "can_turn" : true, "invincible" : false}#基础状态
 
 var target_count = 1#目标数量
 onready var target = {}#作用目标
@@ -69,6 +81,8 @@ onready var float_particle = $Float#游动时的尾部粒子
 
 onready var NerveCell = get_parent().get_node("NerveCell")
 
+onready var LabelCell = RigidBody2D.new()
+
 onready var NNArea = $NNArea
 
 onready var BodyArea = Area2D.new()
@@ -76,7 +90,6 @@ onready var BodyAreaShape = CollisionShape2D.new()
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	self.connect("init_ok", self, "on_init_ok")
-	
 	#add_child(BodyArea)
 	#BodyAreaShape.shape = CircleShape2D.new()
 	#BodyAreaShape.shape.radius = cell_radius
@@ -84,11 +97,13 @@ func _ready():
 	#BodyArea.connect("area_entered", self, "_on_area_entered")
 	#BodyArea.connect("area_exited", self, "_on_area_exited")
 	
+	add_child(LabelCell)
+	
 	get_parent().connect("cells_array_change", self, "_on_cells_array_change")
 	NNArea.connect("body_entered", self, "_on_body_enter_NNArea")
 	NNArea.connect("body_exited", self, "_on_body_exit_NNArea")
 	
-	add_child(invincible_timer)
+	get_parent().add_child(invincible_timer)
 	invincible_timer.wait_time = invincible_time
 	invincible_timer.autostart = false
 	invincible_timer.one_shot = true
@@ -130,11 +145,9 @@ func _process(delta):
 		self.should_goto_center = true
 	
 	if on_command:
-		command_left_vector = command_target_position - (global_position - command_start_global_position)
-		if abs((global_position - command_start_global_position).length() - command_target_position.length()) <= cell_radius:
-			on_command = false
-			command_target_position = Vector2()
-			command_left_vector = Vector2()
+		
+		vector_to_command_position = LabelCell.global_position - global_position
+		command_position = (global_position + vector_to_command_position) - NerveCell.global_position
 	
 	if (get_global_mouse_position() - self.global_position).length() < cell_radius:
 		is_mouse_entered = true
@@ -144,7 +157,7 @@ func _process(delta):
 	#_update_energy_bar()
 
 func _on_invincible_timer_timeout():
-	basic_state["invincible"] = false
+	state[STATE_INVINCIBLE] = false
 
 func _on_body_enter_NNArea(body):
 	if body == self:
@@ -159,7 +172,7 @@ func _update_energy_bar():
 	energy_bar.value = energy
 
 func get_damage(damage, is_hit = true):
-	if basic_state["invincible"]:
+	if state[STATE_INVINCIBLE]:
 		print(self, "is invincible")
 		return
 	var final_damage
