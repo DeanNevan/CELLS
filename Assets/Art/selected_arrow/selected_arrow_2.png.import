@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/thorn_1.png-f79b34e0f2bc49486e6197d91cea17c9.stex"
+path="res://.import/selected_arrow_2.png-1f5c844eb7ffd986f1d9510374a9039b.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/Art/Cells/thorn_cell/thorn_1.png"
-dest_files=[ "res://.import/thorn_1.png-f79b34e0f2bc49486e6197d91cea17c9.stex" ]
+source_file="res://Assets/Art/selected_arrow/selected_arrow_2.png"
+dest_files=[ "res://.import/selected_arrow_2.png-1f5c844eb7ffd986f1d9510374a9039b.stex" ]
 
 [params]
 
@@ -20,7 +20,7 @@ compress/hdr_mode=0
 compress/bptc_ldr=0
 compress/normal_map=0
 flags/repeat=0
-flags/filter=true
+flags/filter=false
 flags/mipmaps=false
 flags/anisotropic=false
 flags/srgb=2

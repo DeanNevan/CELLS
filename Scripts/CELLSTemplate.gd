@@ -19,15 +19,26 @@ var max_turn_speed = 2.5
 var NerveCellInstance
 var NerveCell : PackedScene
 var ArmorCell : PackedScene
+var ThornCell : PackedScene
 func _ready():
 	NerveCell = preload("res://Assets/Cells/NerveCell.tscn")
-	
 	ArmorCell = preload("res://Assets/Cells/ArmorCell/ArmorCell.tscn")
-	
+	ThornCell = preload("res://Assets/Cells/ThornCell/ThornCell.tscn")
 	pass # Replace with function body.
 
 func _draw():
-	pass
+	for i in cells_array.size():
+		if cells_array[i].is_selected and cells_array[i].on_command:
+			match cells_array[i].tag:
+				"player_cell":
+					draw_line(cells_array[i].global_position - global_position, cells_array[i].LabelCell.global_position - global_position, Color.green, 3)
+					#draw_circle(LabelCell.global_position - global_position, 5, Color.green)
+				"enemy_cell":
+					draw_line(cells_array[i].global_position - global_position, cells_array[i].LabelCell.global_position - global_position, Color.red, 3)
+				"neutral_cell":
+					draw_line(cells_array[i].global_position - global_position, cells_array[i].LabelCell.global_position - global_position, Color.yellow, 3)
+				"cell":
+					draw_line(cells_array[i].global_position - global_position, cells_array[i].LabelCell.global_position - global_position, Color.white, 3)
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
@@ -107,9 +118,9 @@ func _process(delta):
 		if cells_array[i].command_velocity.length() > cells_array[i].max_command_speed and cells_array[i].on_command:
 			cells_array[i].command_velocity = cells_array[i].command_velocity.normalized() * cells_array[i].max_command_speed
 		if !cells_array[i].on_command:
-			print("!!!")
 			cells_array[i].command_velocity -= cells_array[i].command_velocity.normalized() * cells_array[i].command_accelaration
-			
-		print(cells_array[i].command_velocity)
-		cells_array[i].linear_velocity += cells_array[i].command_velocity.normalized() * clamp(cells_array[i].command_velocity.length(), 0, cells_array[i].max_command_speed)
+		
+		var _command_distance_bonus = clamp((cells_array[i].global_position - cells_array[i].LabelCell.global_position).length() / 5.0, 0, 75)
+		#print(_command_distance_bonus)
+		cells_array[i].linear_velocity += cells_array[i].command_velocity.normalized() * (clamp(cells_array[i].command_velocity.length(), 0, cells_array[i].max_command_speed) + _command_distance_bonus)
 		#######################

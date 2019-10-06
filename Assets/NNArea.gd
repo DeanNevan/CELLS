@@ -1,6 +1,6 @@
 extends Area2D
 
-export var NN_distance = 60
+export var NN_distance = 55
 
 # Called when the node enters the scene tree for the first time.
 func _ready():

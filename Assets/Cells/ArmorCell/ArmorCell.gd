@@ -11,18 +11,8 @@ func _ready():
 	init()
 
 func _process(delta):
-	#print("left time", armor_bonus_timer.time_left)
-	if Input.is_action_just_pressed("right_mouse_button"):
-		#self.get_damage(15)
-		pass
-		#self.global_rotation += 0.1
-		#print(self.global_rotation)
-	#should_goto_center = false
-	#print(should_goto_center)
-	#print("energy is", self.energy)
-	#print("max_energy is", max_energy)
-	#print("armor is", armor)
-	#print("orgin armor is",orgin_armor)
+
+	init_ok = true
 	
 	if armor > orgin_armor and armor_bonus_timer.paused == true:
 		#print("!!!!!!!!")
@@ -43,14 +33,27 @@ func _on_get_hit(final_damage):
 		self.armor += 1
 
 func init():
+	cell_radius = 15
+	max_command_speed = 50
+	command_accelaration = 3
 	armor = 8
+	strength = 10
 	energy = 180
-	max_energy = 180
-	
-	orgin_armor = armor
+	max_energy = energy
+	push_strength = 8
+	max_push_strength = push_strength
+	max_bear_speed = 100
+	max_centripetal_velocity = 25
+	origin_max_centripetal_velocity = max_centripetal_velocity
+	centripetal_accelaration = 1.4
+	alert_distance = 140
+	invincible_time = 0.2
 	
 	energy_bar.max_value = max_energy
 	energy_bar.value = energy
+	
+	orgin_armor = armor
+	
 	
 	add_child(armor_bonus_timer)
 	armor_bonus_timer.one_shot = false
@@ -58,7 +61,7 @@ func init():
 	armor_bonus_timer.connect("timeout", self, "_on_armor_bonus_timer_timeout")
 	self.connect("get_hit", self, "_on_get_hit")
 	
-	#NNArea.get_node("CollisionShape2D").shape.radius = NN_distance
-	#NNArea.get_node("CollisionShape2D").shape.radius = NN_distance
-	init_ok = true
+	clear_collision_bit(self)
+	set_collision_bit(self)
+	
 	emit_signal("init_ok")

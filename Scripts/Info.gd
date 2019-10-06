@@ -11,9 +11,6 @@ func _draw():
 	for i in get_parent().connected_cells.size():
 		if get_parent().connected_cells[i].is_in_NN:
 			draw_line(get_parent().global_position - self.global_position, get_parent().connected_cells[i].global_position - self.global_position, Color.green, 3)
-	
-	if (get_parent().on_command or get_parent().is_selected) and get_parent().type != "nerve_cell":
-		draw_circle(get_parent().LabelCell.global_position - global_position, 5, Color.red)
 
 func _ready():
 	self.visible = false

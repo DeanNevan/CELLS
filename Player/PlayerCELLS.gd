@@ -9,13 +9,19 @@ var _count = 1
 var _point = Vector2()
 
 var just_pressed_left_mouse_position = Vector2()
-# Called when the node enters the scene tree for the first time.
+
+func _draw():
+	for i in cells_array.size():
+		if cells_array[i].is_selected and cells_array[i].tag == "player_cell" and cells_array[i].type != "nerve_cell" and Input.is_action_pressed("right_mouse_button"):
+			draw_circle(cells_array[i].LabelCell.global_position - global_position, 5, Color.green)
+
 func _ready():
 	var NerveCell1 = NerveCell.instance()
+	NerveCell1.tag = "player_cell"
 	add_child(NerveCell1)
 	NerveCell1.global_position = get_global_mouse_position()
 	cells_array.append(NerveCell1)
-	NerveCell1.tag = "player_cell"
+	
 	NerveCellInstance = NerveCell1
 	pass
 
@@ -23,53 +29,56 @@ func _ready():
 func _process(delta):
 	if Input.is_action_just_pressed("key_1"):
 		var ArmorCell1 = ArmorCell.instance()
+		ArmorCell1.tag = "player_cell"
 		add_child(ArmorCell1)
 		ArmorCell1.global_position = get_global_mouse_position()
-		ArmorCell1.tag = "player_cell"
+		
 		cells_array.append(ArmorCell1)
+	
+	if Input.is_action_just_pressed("key_2"):
+		var ThornCell1 = ThornCell.instance()
+		ThornCell1.tag = "player_cell"
+		add_child(ThornCell1)
+		ThornCell1.global_position = get_global_mouse_position()
+		
+		cells_array.append(ThornCell1)
 	
 	if Input.is_action_just_pressed("right_mouse_button"):
 		_wheel_count = 0
 		for i in cells_array.size():
 			if cells_array[i].is_selected and cells_array[i].tag == "player_cell" and cells_array[i].type != "nerve_cell":
-				cells_array[i].on_command = false
-				
+				#cells_array[i].on_command = false
+				cells_array[i].command_start_position = cells_array[i].global_position
 		
 	if Input.is_action_pressed("right_mouse_button"):
+		
+		update()
 		_count = 1
 		_point = Vector2()
 		for i in cells_array.size():
 			if cells_array[i].is_selected and cells_array[i].tag == "player_cell" and cells_array[i].type != "nerve_cell":
-				#cells_array[i].LabelCell.global_position = get_global_mouse_position() + cells_array[i].vector_mouse_to_label
-				cells_array[i].vector_mouse_to_label = cells_array[i].LabelCell.global_position - get_global_mouse_position()
+				if (cells_array[i].global_position - cells_array[i].LabelCell.global_position).length() > cells_array[i].cell_radius:
+					cells_array[i].on_command = true
 				_count += 1
 				_point += cells_array[i].global_position
 		on_command_cells_center_point = _point / (_count - 1)
 		
 		if Input.is_action_just_released("wheel_up"):
-			 _wheel_count += 1
+			 _wheel_count -= 1
 		elif Input.is_action_just_released("wheel_down"):
-			_wheel_count -= 1
+			_wheel_count += 1
 		
 		var _ang = 0
 		for i in cells_array.size():
 			if cells_array[i].is_selected and cells_array[i].tag == "player_cell" and cells_array[i].type != "nerve_cell":
 				cells_array[i].command_to_center_ang = (cells_array[i].global_position - on_command_cells_center_point).angle()
-				var _final_ang = cells_array[i].command_to_center_ang + _wheel_count * 0.2
+				var _final_ang = cells_array[i].command_to_center_ang + _wheel_count * 0.3
 				cells_array[i].LabelCell.global_position = get_global_mouse_position() + (Vector2(cos(_final_ang), sin (_final_ang))) * (cells_array[i].global_position - on_command_cells_center_point).length()
 		
-		
-		
 	if Input.is_action_just_released("right_mouse_button"):
-		print("!!!")
 		for i in cells_array.size():
 			if cells_array[i].is_selected and cells_array[i].tag == "player_cell" and cells_array[i].type != "nerve_cell":
 				cells_array[i].on_command = true
-				
-				
-		
-		
-
 	
 	_control_move()
 
