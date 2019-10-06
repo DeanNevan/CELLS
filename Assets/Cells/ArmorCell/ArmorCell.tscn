@@ -45,7 +45,6 @@ shape = SubResource( 2 )
 z_index = 1
 z_as_relative = false
 script = ExtResource( 6 )
-NN_distance = 50
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="NNArea"]
 shape = SubResource( 3 )

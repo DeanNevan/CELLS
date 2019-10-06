@@ -35,7 +35,9 @@ var is_selected := false#是否被拾起
 var on_command = false
 var command_position = Vector2()
 var vector_to_command_position = Vector2()
-var max_command_speed = 50
+var max_command_speed = 60
+var command_accelaration = 4
+var command_velocity = Vector2()
 var command_speed = 0
 
 var armor = 5#护甲
@@ -50,9 +52,12 @@ var push_acceleration = 1#推动加速度 0.0-1.0
 
 var max_bear_speed = 80
 
-var max_centripetal_velocity = 35
+var max_centripetal_velocity = 30
+var origin_max_centripetal_velocity = 30
 var centripetal_velocity = 0
-var centripetal_accelaration = 2
+var centripetal_accelaration = 1.8
+var origin_centripetal_accelaration = 1.8
+
 
 var alert_distance = 200#警戒距离
 
@@ -82,6 +87,8 @@ onready var float_particle = $Float#游动时的尾部粒子
 onready var NerveCell = get_parent().get_node("NerveCell")
 
 onready var LabelCell = RigidBody2D.new()
+var vector_mouse_to_label = Vector2()
+var command_to_center_ang = 0
 
 onready var NNArea = $NNArea
 
@@ -127,16 +134,25 @@ func _process(delta):
 		for i in connected_cells.size():
 			connected_cells[i].is_in_NN = true
 	
+	if !state[STATE_IN_NN]:
+		max_centripetal_velocity = origin_max_centripetal_velocity * 1.5
+	else:
+		max_centripetal_velocity = origin_max_centripetal_velocity
+	
 	var _target_goto_cell = NerveCell
 	var _cloest_goto_cell_distance = 0
+	var _smallest_angle = 10000
 	for i in connected_cells.size():
 		if (NerveCell.global_position - connected_cells[i].global_position).length() < (NerveCell.global_position - self.global_position).length() and (NerveCell.global_position - connected_cells[i].global_position).length() > _cloest_goto_cell_distance:
 			_target_goto_cell = connected_cells[i]
 			_cloest_goto_cell_distance = (NerveCell.global_position - connected_cells[i].global_position).length()
-	if (NerveCell.global_position - global_position).angle_to(NerveCell.global_position - _target_goto_cell.global_position) > PI / 3 and connected_cells.has(NerveCell):
+		#if abs((NerveCell.global_position - global_position).angle_to(NerveCell.global_position - _target_goto_cell.global_position)) < _smallest_angle:
+			#_smallest_angle = (NerveCell.global_position - global_position).angle_to(NerveCell.global_position - _target_goto_cell.global_position)
+			#_target_goto_cell = connected_cells[i]
+	if (NerveCell.global_position - global_position).angle_to(NerveCell.global_position - _target_goto_cell.global_position) > PI / 2.2 and connected_cells.has(NerveCell):
 		_target_goto_cell = NerveCell
 	target_goto_cell = _target_goto_cell
-	if (_target_goto_cell.global_position - self.global_position).length() > _target_goto_cell.cell_radius + self.cell_radius + 20:
+	if (_target_goto_cell.global_position - self.global_position).length() > _target_goto_cell.cell_radius + self.cell_radius + 25:
 		self.should_goto_center = true
 	else:
 		self.should_goto_center = false
@@ -145,9 +161,11 @@ func _process(delta):
 		self.should_goto_center = true
 	
 	if on_command:
-		
+		should_goto_center = false
 		vector_to_command_position = LabelCell.global_position - global_position
 		command_position = (global_position + vector_to_command_position) - NerveCell.global_position
+		if (LabelCell.global_position - global_position).length() < cell_radius:
+			on_command = false
 	
 	if (get_global_mouse_position() - self.global_position).length() < cell_radius:
 		is_mouse_entered = true

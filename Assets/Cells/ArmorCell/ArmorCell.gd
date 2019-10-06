@@ -29,8 +29,6 @@ func _process(delta):
 		_restart_armor_bonus_timer()
 	if armor == orgin_armor:
 		armor_bonus_timer.paused = true
-	
-	
 
 func _on_armor_bonus_timer_timeout():
 	if armor > orgin_armor:
@@ -43,8 +41,6 @@ func _restart_armor_bonus_timer():
 func _on_get_hit(final_damage):
 	if final_damage > 0:
 		self.armor += 1
-
-
 
 func init():
 	armor = 8

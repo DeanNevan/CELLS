@@ -12,8 +12,8 @@ func _draw():
 		if get_parent().connected_cells[i].is_in_NN:
 			draw_line(get_parent().global_position - self.global_position, get_parent().connected_cells[i].global_position - self.global_position, Color.green, 3)
 	
-	if get_parent().on_command:
-		draw_circle(get_parent().NerveCell.global_position + get_parent().command_position - global_position, 5, Color.red)
+	if (get_parent().on_command or get_parent().is_selected) and get_parent().type != "nerve_cell":
+		draw_circle(get_parent().LabelCell.global_position - global_position, 5, Color.red)
 
 func _ready():
 	self.visible = false
@@ -28,8 +28,6 @@ func _process(delta):
 	self.global_rotation = 0
 func display():
 	self.visible = true
-	
-	
 	
 	if get_parent().is_in_NN:
 		$Label.modulate = Color.green

@@ -2,6 +2,13 @@ extends "res://Scripts/CELLSTemplate.gd"
 
 var is_controlling := true
 
+var _wheel_count = 0
+
+
+var _count = 1
+var _point = Vector2()
+
+var just_pressed_left_mouse_position = Vector2()
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	var NerveCell1 = NerveCell.instance()
@@ -20,23 +27,49 @@ func _process(delta):
 		ArmorCell1.global_position = get_global_mouse_position()
 		ArmorCell1.tag = "player_cell"
 		cells_array.append(ArmorCell1)
+	
+	if Input.is_action_just_pressed("right_mouse_button"):
+		_wheel_count = 0
+		for i in cells_array.size():
+			if cells_array[i].is_selected and cells_array[i].tag == "player_cell" and cells_array[i].type != "nerve_cell":
+				cells_array[i].on_command = false
+				
 		
 	if Input.is_action_pressed("right_mouse_button"):
-		var _count = 1
-		on_command_cells_center_point = Vector2()
+		_count = 1
+		_point = Vector2()
+		for i in cells_array.size():
+			if cells_array[i].is_selected and cells_array[i].tag == "player_cell" and cells_array[i].type != "nerve_cell":
+				#cells_array[i].LabelCell.global_position = get_global_mouse_position() + cells_array[i].vector_mouse_to_label
+				cells_array[i].vector_mouse_to_label = cells_array[i].LabelCell.global_position - get_global_mouse_position()
+				_count += 1
+				_point += cells_array[i].global_position
+		on_command_cells_center_point = _point / (_count - 1)
+		
+		if Input.is_action_just_released("wheel_up"):
+			 _wheel_count += 1
+		elif Input.is_action_just_released("wheel_down"):
+			_wheel_count -= 1
+		
+		var _ang = 0
+		for i in cells_array.size():
+			if cells_array[i].is_selected and cells_array[i].tag == "player_cell" and cells_array[i].type != "nerve_cell":
+				cells_array[i].command_to_center_ang = (cells_array[i].global_position - on_command_cells_center_point).angle()
+				var _final_ang = cells_array[i].command_to_center_ang + _wheel_count * 0.2
+				cells_array[i].LabelCell.global_position = get_global_mouse_position() + (Vector2(cos(_final_ang), sin (_final_ang))) * (cells_array[i].global_position - on_command_cells_center_point).length()
+		
+		
+		
+	if Input.is_action_just_released("right_mouse_button"):
+		print("!!!")
 		for i in cells_array.size():
 			if cells_array[i].is_selected and cells_array[i].tag == "player_cell" and cells_array[i].type != "nerve_cell":
 				cells_array[i].on_command = true
 				
-				_count += 1
-				on_command_cells_center_point += cells_array[i].global_position
-		on_command_cells_center_point = on_command_cells_center_point / (_count - 1)
-		for i in cells_array.size():
-			if cells_array[i].is_selected and cells_array[i].tag == "player_cell" and cells_array[i].type != "nerve_cell":
-				#cells_array[i].command_position = cells_array[i].global_position + (get_global_mouse_position() - on_command_cells_center_point) - NerveCellInstance.global_position
-				#cells_array[i].vector_to_command_position = (NerveCellInstance.global_position + cells_array[i].command_position) - cells_array[i].global_position
-				cells_array[i].LabelCell.global_position = cells_array[i].global_position + (get_global_mouse_position() - on_command_cells_center_point)
-			print(cells_array[i].LabelCell.global_position)
+				
+		
+		
+
 	
 	_control_move()
 
@@ -64,5 +97,5 @@ func _control_move():
 			#self.is_turning = false
 			if self.turn_speed >= _delta / (120.0 + cells_array.size() * 42):
 				self.turn_speed -= _delta / (120.0 + cells_array.size() * 42)
-			elif self.turn_speed <= _delta / (120.0 + cells_array.size() * 42):
+			elif self.turn_speed <= _delta / (120.0 + cells_array.size() * 42) and turn_speed != 0:
 				self.turn_speed += _delta / (120.0 + cells_array.size() * 42)
